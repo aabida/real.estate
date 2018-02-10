@@ -19,20 +19,25 @@ function callNotaryWebsite() {
 function readNotaryFile() {
 	fs.readFile('/home/ahmed/Téléchargements/datas.txt', 'utf8', function(err, contents) {
 
-    	parseBody(contents);
+    	var towns = parseBody(contents);
+    	console.log(JSON.stringify(towns, null, 2));
 	});
 }
 
 var parseBody = function(body) {
 	var lines = body.split('\n\n');
+
+	var towns = [];
 	for (var i = 0; i< lines.length - 1; i++) {
 		var dataPerTown = lines[i];
 		//var line2 = lines[i+1];
 
 		var town = new Town(dataPerTown);
 
-		console.log(town);
+		towns.push(town);
 	}
+
+	return towns;
 
 };
 
