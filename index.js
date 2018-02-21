@@ -30,7 +30,6 @@ var parseBody = function(body) {
 	var towns = [];
 	for (var i = 0; i< lines.length - 1; i++) {
 		var dataPerTown = lines[i];
-		//var line2 = lines[i+1];
 
 		var town = new Town(dataPerTown);
 
@@ -44,15 +43,14 @@ var parseBody = function(body) {
 class Town {
 
 	constructor(data) {
-		var datas = data.split('&');
-		this.townName = this.parseTownName(datas[1]);
+		var datas = data.split('\n');
+		this.townName = this.parseTownName(datas[0]);
  		
- 		var averageAppartmentPrice = datas[3];
- 		var appartmentPriceVariationInTrimester = datas[4];
- 		var appartmentPriceVariationInOneYear = datas[5];
- 		var appartmentPriceVariationInFiveYear = datas[6];
+ 		var appartmentRawData = datas[1];
+ 		var houseRawData = datas.length > 2 ? datas[2] : null;
 
-		this.appartment = new Appartment(averageAppartmentPrice, appartmentPriceVariationInTrimester, appartmentPriceVariationInOneYear, appartmentPriceVariationInFiveYear);
+		this.appartment = new Appartment(appartmentRawData);
+		this.house = new House(houseRawData);
 	}
 
 	parseTownName(rawTownName) {
@@ -68,19 +66,50 @@ class Town {
 	
 }
 
-class Appartment {
-	constructor(averageAppartmentPrice, appartmentPriceVariationInTrimester, appartmentPriceVariationInOneYear, appartmentPriceVariationInFiveYear) {
-		this.averageAppartmentPrice = averageAppartmentPrice.split('=')[1];
-		this.appartmentPriceVariationInTrimester = appartmentPriceVariationInTrimester.split('=')[1];
-		this.appartmentPriceVariationInOneYear = appartmentPriceVariationInOneYear.split('=')[1];
-		this.appartmentPriceVariationInFiveYear = appartmentPriceVariationInFiveYear.split('=')[1];
+class DataParser {
+	parse(rawData) {
+		var splittedData = rawData.split('&');
+
+		var i = 1;
+		var averagePrice = splittedData[i++];
+		var priceVariationInTrimester = splittedData[i++];
+		var priceVariationInOneYear = splittedData[i++];
+		var priceVariationInFiveYear = splittedData[i++];
+
+		return {
+			averagePrice : averagePrice.split('=')[1],
+			priceVariationInTrimester : priceVariationInTrimester.split('=')[1],
+			priceVariationInOneYear : priceVariationInOneYear.split('=')[1],
+			priceVariationInFiveYear : priceVariationInFiveYear.split('=')[1]
+		}
 	}
 }
+class Appartment {
+	constructor(appartmentRawData) {
+		var dataParser = new DataParser();
+		
+		var parsedData = dataParser.parse(appartmentRawData);
 
-class Variation {
-	constructor(duration, variation) {
-		this.duration = duration;
-		this.variation = variation
+		this.averageAppartmentPrice = parsedData.averagePrice;
+		this.priceVariationInTrimester = parsedData.priceVariationInTrimester;
+		this.priceVariationInOneYear = parsedData.priceVariationInOneYear;
+		this.priceVariationInFiveYear = parsedData.priceVariationInFiveYear;
+	}
+
+}
+
+class House {
+	constructor(houseRawData) {
+		if (houseRawData !== null) {
+			var dataParser = new DataParser();
+			
+			var parsedData = dataParser.parse(houseRawData);
+
+			this.averageHousePrice = parsedData.averagePrice;
+			this.priceVariationInTrimester = parsedData.priceVariationInTrimester;
+			this.priceVariationInOneYear = parsedData.priceVariationInOneYear;
+			this.priceVariationInFiveYear = parsedData.priceVariationInFiveYear;
+		}
 	}
 }
 
